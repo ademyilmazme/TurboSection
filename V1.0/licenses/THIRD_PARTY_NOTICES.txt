@@ -1,0 +1,72 @@
+TurboSection V1.0 - third-party components
+
+The Python packages this release was built from (the application runtime:
+the modules the application imports are included; the Nastran worker
+runtime: complete), their versions and the license each package declares.
+The license texts are in the app\ and nastran-runtime\ folders.
+
+[application runtime]
+  ansys-mapdl-reader 0.56.0  MIT
+  appdirs 1.4.4  MIT
+  attrs 26.1.0  MIT
+  certifi 2026.7.22  MPL-2.0
+  charset-normalizer 3.5.2  MIT
+  colorama 0.4.6  
+  contourpy 1.3.3  BSD 3-Clause License
+  cycler 0.12.1  Copyright (c) 2015, matplotlib project
+  cyclopts 5.2.0  Apache-2.0
+  docstring_parser 0.18.0  MIT
+  fonttools 4.66.1  MIT
+  h5py 3.16.0  BSD-3-Clause
+  idna 3.20  BSD-3-Clause
+  kiwisolver 1.5.1  =========================
+  markdown-it-py 4.2.0  
+  matplotlib 3.11.2  License agreement for matplotlib versions 1.3.0 and later
+  mdurl 0.1.2  
+  numpy 2.4.6  BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0
+  packaging 26.3  Apache-2.0 OR BSD-2-Clause
+  pillow 12.3.0  MIT-CMU
+  platformdirs 4.13.0  MIT
+  pooch 1.9.0  BSD-3-Clause
+  Pygments 2.21.0  BSD-2-Clause
+  pyparsing 3.3.3  MIT
+  PySide6 6.12.0  LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+  PySide6_Addons 6.12.0  LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+  PySide6_Essentials 6.12.0  LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+  PySide6_Pdf 6.12.0.140  LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+  PySide6_WebEngine 6.12.0.140  LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+  python-dateutil 2.9.0.post0  Dual License
+  pyvista 0.49.1  MIT
+  pyvista-validation 0.2.2  MIT
+  requests 2.34.2  Apache-2.0
+  rich 15.0.0  MIT
+  rich-rst 2.2.0  MIT
+  scooby 0.12.0  MIT
+  shiboken6 6.12.0  LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+  six 1.17.0  MIT
+  tqdm 4.70.1  MPL-2.0 AND MIT
+  typing_extensions 4.16.0  PSF-2.0
+  urllib3 2.8.0  MIT
+  vtk 9.7.1  BSD
+
+[Nastran worker runtime]
+  colorama 0.4.6  
+  contourpy 1.3.3  BSD 3-Clause License
+  cpylog 1.6.0  
+  cycler 0.12.1  Copyright (c) 2015, matplotlib project
+  docopt-ng 0.9.0  MIT
+  fonttools 4.67.0  MIT
+  kiwisolver 1.5.1  =========================
+  matplotlib 3.11.2  License agreement for matplotlib versions 1.3.0 and later
+  numpy 1.26.4  Copyright (c) 2005-2023, NumPy Developers.
+  packaging 26.3  Apache-2.0 OR BSD-2-Clause
+  pillow 13.0.0  MIT-CMU
+  pyNastran 1.4.1  Copyright (c) 2011-2024 Steven Doyle.
+  pyparsing 3.3.3  MIT
+  python-dateutil 2.9.0.post0  Dual License
+  scipy 1.17.1  Copyright (c) 2001-2002 Enthought, Inc. 2003, SciPy Develope
+  six 1.17.0  MIT
+
+[other]
+  Python 3.11 (CPython)  PSF License  Python-3.11-LICENSE.txt
+  PyInstaller bootloader  GPL-2.0 with the bootloader exception  PyInstaller-bootloader-COPYING.txt

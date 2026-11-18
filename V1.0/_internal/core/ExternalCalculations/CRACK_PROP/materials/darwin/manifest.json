@@ -1,0 +1,306 @@
+{
+  "generator": "core/ExternalCalculations/CRACK_PROP/tools/darwin_examples.py",
+  "source_folder": "C:/Users/Public/Documents/DARWIN-10-0/examples/auxiliaries/samples/mat/si",
+  "darwin": "DARWIN 10.0 (Southwest Research Institute), examples/auxiliaries/samples/mat/si",
+  "units": "METRIC: da/dN m/cycle, K MPa·m^0.5, temperature °C (darwin-verification.pdf Table 3-3)",
+  "mapping": {
+    "C": "Crack Growth: Paris / Paris C [m/cycle/(MPa·m^0.5)^n]",
+    "n": "Crack Growth: Paris / Paris n",
+    "B": "Crack Growth: Sigmoidal / Sigmoidal B",
+    "P": "Crack Growth: Sigmoidal / Sigmoidal P",
+    "Q": "Crack Growth: Sigmoidal / Sigmoidal Q",
+    "D": "Crack Growth: Sigmoidal / Sigmoidal D",
+    "dKth": "Threshold ΔK_th [MPa·m^0.5] of the law's block",
+    "Kc": "Fracture Toughness (K_IC); Sigmoidal: also Asymptote K_c [MPa·m^0.5]",
+    "m+": "Crack Growth: Walker / Walker m (R ≥ 0)",
+    "m-": "Crack Growth: Walker / Walker m (R < 0)",
+    "Temp": "Temperature [°C] of every block"
+  },
+  "examples": [
+    {
+      "name": "DARWIN paris_none",
+      "file": "paris_none.xml",
+      "source": "paris_none.si.mat",
+      "sha256": "2d713f21455a7d31e0916b3f74dcf87abd54f519a23ae2440720777cbaf0d1a6",
+      "title": "Ti64 props.: Paris FCG eqn.None Stress Ratio eqn R=0.03",
+      "environment": "AIR",
+      "environments_identical": true,
+      "law": "paris",
+      "stress_ratio_model": "NONE",
+      "darwin_temperature_interpolation": {
+        "AIR": "CLOSEST",
+        "VACUUM": "INTERPOLATE"
+      },
+      "columns": [
+        "C",
+        "n",
+        "dKth",
+        "Kc",
+        "Temp"
+      ]
+    },
+    {
+      "name": "DARWIN paris_walker_eqn",
+      "file": "paris_walker_eqn.xml",
+      "source": "paris_walker_eqn.si.mat",
+      "sha256": "b3c841c360b066c770b12478a0a3df9b43089fc1024d706feec5e5cf217f2107",
+      "title": "Ti64 props.: Paris FCG eqn., Walker_Eqn stress ratio eqn.",
+      "environment": "AIR",
+      "environments_identical": true,
+      "law": "paris",
+      "stress_ratio_model": "WALKER_EQN",
+      "darwin_temperature_interpolation": {
+        "AIR": "CLOSEST",
+        "VACUUM": "INTERPOLATE"
+      },
+      "columns": [
+        "C",
+        "n",
+        "dKth",
+        "Kc",
+        "m-",
+        "m+",
+        "Temp"
+      ]
+    },
+    {
+      "name": "DARWIN sigmoidal_none",
+      "file": "sigmoidal_none.xml",
+      "source": "sigmoidal_none.si.mat",
+      "sha256": "41d892c9e32a75738c221c1fe738aecb889f1648a840f19bd47fb3db13ab4375",
+      "title": "Ti64 props: Sigmoidal FCG eqn, None stress ratio eqn.",
+      "environment": "AIR",
+      "environments_identical": true,
+      "law": "sigmoidal",
+      "stress_ratio_model": "NONE",
+      "darwin_temperature_interpolation": {
+        "AIR": "INTERPOLATE",
+        "VACUUM": "INTERPOLATE"
+      },
+      "columns": [
+        "B",
+        "P",
+        "Q",
+        "D",
+        "dKth",
+        "Kc",
+        "Temp"
+      ]
+    },
+    {
+      "name": "DARWIN sigmoidal_walker (air)",
+      "file": "sigmoidal_walker_air.xml",
+      "source": "sigmoidal_walker.si.mat",
+      "sha256": "44f188e6f77aceff52e26a139a0afb8cce03e8f2300e864e51722ed950e58d26",
+      "title": "Ti64 props: Sigmoidal FCG eqn, Walker stress ratio eqn.",
+      "environment": "AIR",
+      "environments_identical": false,
+      "law": "sigmoidal",
+      "stress_ratio_model": "WALKER_EQN",
+      "darwin_temperature_interpolation": {
+        "AIR": "INTERPOLATE"
+      },
+      "columns": [
+        "B",
+        "P",
+        "Q",
+        "D",
+        "dKth",
+        "Kc",
+        "m-",
+        "m+",
+        "Temp"
+      ]
+    },
+    {
+      "name": "DARWIN sigmoidal_walker (vacuum)",
+      "file": "sigmoidal_walker_vacuum.xml",
+      "source": "sigmoidal_walker.si.mat",
+      "sha256": "44f188e6f77aceff52e26a139a0afb8cce03e8f2300e864e51722ed950e58d26",
+      "title": "Ti64 props: Sigmoidal FCG eqn, Walker stress ratio eqn.",
+      "environment": "VACUUM",
+      "environments_identical": false,
+      "law": "sigmoidal",
+      "stress_ratio_model": "WALKER_EQN",
+      "darwin_temperature_interpolation": {
+        "VACUUM": "INTERPOLATE"
+      },
+      "columns": [
+        "B",
+        "P",
+        "Q",
+        "D",
+        "dKth",
+        "Kc",
+        "m-",
+        "m+",
+        "Temp"
+      ]
+    },
+    {
+      "name": "DARWIN ti64_Paris_R03",
+      "file": "ti64_Paris_R03.xml",
+      "source": "ti64_Paris_R03.si.mat",
+      "sha256": "e51b9c1e9a911bc2c4fa32041da741d052135346f3abe39692750259ea1d7234",
+      "title": "Ti64 props. in air: Paris FCG eqn.: R=0.03",
+      "environment": "AIR",
+      "environments_identical": true,
+      "law": "paris",
+      "stress_ratio_model": "NONE",
+      "darwin_temperature_interpolation": {
+        "AIR": "CLOSEST",
+        "VACUUM": "INTERPOLATE"
+      },
+      "columns": [
+        "C",
+        "n",
+        "dKth",
+        "Kc",
+        "Temp"
+      ]
+    },
+    {
+      "name": "DARWIN ti64_Paris_R25",
+      "file": "ti64_Paris_R25.xml",
+      "source": "ti64_Paris_R25.si.mat",
+      "sha256": "d4ba6f2576a374373e7fc8c78c3d221bf254bcf5967bbe668f1c735cdd47eddd",
+      "title": "Ti64 props. in air: Paris FCG eqn., R=0.25",
+      "environment": "AIR",
+      "environments_identical": true,
+      "law": "paris",
+      "stress_ratio_model": "NONE",
+      "darwin_temperature_interpolation": {
+        "AIR": "CLOSEST",
+        "VACUUM": "INTERPOLATE"
+      },
+      "columns": [
+        "C",
+        "n",
+        "dKth",
+        "Kc",
+        "Temp"
+      ]
+    },
+    {
+      "name": "DARWIN ti64_Paris_R54",
+      "file": "ti64_Paris_R54.xml",
+      "source": "ti64_Paris_R54.si.mat",
+      "sha256": "ce126b8c31ec08a6e01752dfb9b5dbf55f50996d90a65ef7debdc716fd29ae14",
+      "title": "Ti64 props. in air: Paris FCG eqn., R=0.54",
+      "environment": "AIR",
+      "environments_identical": true,
+      "law": "paris",
+      "stress_ratio_model": "NONE",
+      "darwin_temperature_interpolation": {
+        "AIR": "CLOSEST",
+        "VACUUM": "INTERPOLATE"
+      },
+      "columns": [
+        "C",
+        "n",
+        "dKth",
+        "Kc",
+        "Temp"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "source": "biparis_closure.si.mat",
+      "reason": "growth law ['BILINEAR_PARIS']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "biparis_none.si.mat",
+      "reason": "growth law ['BILINEAR_PARIS']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "biparis_walker.si.mat",
+      "reason": "growth law ['BILINEAR_PARIS']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "biparis_walker_inter.si.mat",
+      "reason": "growth law ['BILINEAR_PARIS']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "hyperbolic_closure.si.mat",
+      "reason": "growth law ['HYPERBOLIC_SINE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "hyperbolic_none.si.mat",
+      "reason": "growth law ['HYPERBOLIC_SINE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "hyperbolic_walker.si.mat",
+      "reason": "growth law ['HYPERBOLIC_SINE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "hyperbolic_walker_inter.si.mat",
+      "reason": "growth law ['HYPERBOLIC_SINE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "ME3-paris_walk_inter.si.mat",
+      "reason": "stress-ratio model ['WALKER_INTERPOLATE']: not supported by the engine (NONE and WALKER_EQN are)"
+    },
+    {
+      "source": "NASGRO_none.si.mat",
+      "reason": "growth law ['NASGRO_EQN']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "paris_closure.si.mat",
+      "reason": "stress-ratio model ['CLOSURE']: not supported by the engine (NONE and WALKER_EQN are)"
+    },
+    {
+      "source": "paris_walk_inter.si.mat",
+      "reason": "stress-ratio model ['WALKER_INTERPOLATE']: not supported by the engine (NONE and WALKER_EQN are)"
+    },
+    {
+      "source": "sigmoidal_closure.si.mat",
+      "reason": "stress-ratio model ['CLOSURE']: not supported by the engine (NONE and WALKER_EQN are)"
+    },
+    {
+      "source": "sigmoidal_walker_inter.si.mat",
+      "reason": "stress-ratio model ['WALKER_INTERPOLATE']: not supported by the engine (NONE and WALKER_EQN are)"
+    },
+    {
+      "source": "smoothed_multilinear_closure.si.mat",
+      "reason": "growth law ['SMOOTHMULTILINE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "smoothed_multilinear_none.si.mat",
+      "reason": "growth law ['SMOOTHMULTILINE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "smoothed_multilinear_walker.si.mat",
+      "reason": "growth law ['SMOOTHMULTILINE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "smoothed_multilinear_walker_inter.si.mat",
+      "reason": "growth law ['SMOOTHMULTILINE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "table_closure.si.mat",
+      "reason": "growth law ['TABLE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "table_none.si.mat",
+      "reason": "growth law ['TABLE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "table_walker.si.mat",
+      "reason": "growth law ['TABLE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "table_walker_inter.si.mat",
+      "reason": "growth law ['TABLE']: not Paris or Sigmoidal"
+    },
+    {
+      "source": "ti64_Paris_closure.si.mat",
+      "reason": "stress-ratio model ['CLOSURE']: not supported by the engine (NONE and WALKER_EQN are)"
+    },
+    {
+      "source": "ti64_Paris_walker.si.mat",
+      "environment": "AIR",
+      "reason": "identical to DARWIN paris_walker_eqn"
+    }
+  ]
+}

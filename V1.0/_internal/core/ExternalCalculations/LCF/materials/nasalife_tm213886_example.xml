@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EngineeringData version="24.2.0.202" versiondate="5/13/2024 5:34:00 PM">
+  <Notes>
+  </Notes>
+  <Materials>
+    <MatML_Doc>
+      <Material>
+        <BulkDetails>
+          <Name>NASALIFE TM-2005-213886 Example</Name>
+          <Description>The worked example of NASA/TM-2005-213886/REV2 (NASALIFE), sec. 3.5 input file: the idealized LCF data (sec. 3.2.1), Walker exponents and Ramberg-Osgood constants (sec. 3.2.2) and the Larson-Miller rupture equation testn.rupd (sec. 3.2.5). Published result (sec. 3.9): fatigue 4423 cycles, rupture 512 missions, combined 459 missions. Demonstration data: never for design.</Description>
+          <Class>
+            <Name>NASALIFE reference</Name>
+          </Class>
+          <PropertyData property="pr0">
+            <Data format="string">-</Data>
+            <Qualifier name="Interpolation">Log-Log</Qualifier>
+            <Qualifier name="Field Variable Compatible">Temperature, A-Ratio</Qualifier>
+            <ParameterValue parameter="pa0" format="float">
+              <Data>400,51,50,300,21,20,300,21,20,300,11,10</Data>
+              <Qualifier name="Variable Type">Dependent,Dependent,Dependent,Dependent,Dependent,Dependent,Dependent,Dependent,Dependent,Dependent,Dependent,Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa1" format="float">
+              <Data>1000,10000,100000,1000,10000,100000,1000,10000,100000,1000,10000,100000</Data>
+              <Qualifier name="Variable Type">Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa2" format="float">
+              <Data>60,60,60,300,300,300,1000,1000,1000,1300,1300,1300</Data>
+              <Qualifier name="Variable Type">Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent</Qualifier>
+              <Qualifier name="Field Variable">Temperature</Qualifier>
+              <Qualifier name="Default Data">71.6</Qualifier>
+              <Qualifier name="Field Units">F</Qualifier>
+              <Qualifier name="Upper Limit">Program Controlled</Qualifier>
+              <Qualifier name="Lower Limit">Program Controlled</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa3" format="float">
+              <Data>1,1,1,1,1,1,1,1,1,1,1,1</Data>
+              <Qualifier name="Variable Type">Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent,Independent</Qualifier>
+              <Qualifier name="Field Variable">A-Ratio</Qualifier>
+              <Qualifier name="Default Data">0</Qualifier>
+              <Qualifier name="Field Units" />
+            </ParameterValue>
+          </PropertyData>
+          <PropertyData property="pr1">
+            <Data format="string">-</Data>
+            <Qualifier name="Field Variable Compatible">Temperature</Qualifier>
+            <ParameterValue parameter="pa2" format="float">
+              <Data>60,1300</Data>
+              <Qualifier name="Variable Type">Independent,Independent</Qualifier>
+              <Qualifier name="Field Variable">Temperature</Qualifier>
+              <Qualifier name="Default Data">71.6</Qualifier>
+              <Qualifier name="Field Units">F</Qualifier>
+              <Qualifier name="Upper Limit">Program Controlled</Qualifier>
+              <Qualifier name="Lower Limit">Program Controlled</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa4" format="float">
+              <Data>0.5,0.5</Data>
+              <Qualifier name="Variable Type">Dependent,Dependent</Qualifier>
+            </ParameterValue>
+          </PropertyData>
+          <PropertyData property="pr2">
+            <Data format="string">-</Data>
+            <Qualifier name="Field Variable Compatible">Temperature</Qualifier>
+            <ParameterValue parameter="pa2" format="float">
+              <Data>60,1300</Data>
+              <Qualifier name="Variable Type">Independent,Independent</Qualifier>
+              <Qualifier name="Field Variable">Temperature</Qualifier>
+              <Qualifier name="Default Data">71.6</Qualifier>
+              <Qualifier name="Field Units">F</Qualifier>
+              <Qualifier name="Upper Limit">Program Controlled</Qualifier>
+              <Qualifier name="Lower Limit">Program Controlled</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa5" format="float">
+              <Data>100,100</Data>
+              <Qualifier name="Variable Type">Dependent,Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa6" format="float">
+              <Data>0,0</Data>
+              <Qualifier name="Variable Type">Dependent,Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa7" format="float">
+              <Data>0.002,0.002</Data>
+              <Qualifier name="Variable Type">Independent,Independent</Qualifier>
+              <Qualifier name="Field Variable">Yield Offset Strain</Qualifier>
+              <Qualifier name="Default Data">0</Qualifier>
+              <Qualifier name="Field Units" />
+            </ParameterValue>
+            <ParameterValue parameter="pa8" format="float">
+              <Data>0,0</Data>
+              <Qualifier name="Variable Type">Independent,Independent</Qualifier>
+              <Qualifier name="Field Variable">Low Temperature Extrapolation</Qualifier>
+              <Qualifier name="Default Data">0</Qualifier>
+              <Qualifier name="Field Units" />
+            </ParameterValue>
+          </PropertyData>
+          <PropertyData property="pr3">
+            <Data format="string">-</Data>
+            <ParameterValue parameter="pa9" format="float">
+              <Data>20</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa10" format="float">
+              <Data>2</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa11" format="float">
+              <Data>0</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa12" format="float">
+              <Data>459.67</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa13" format="float">
+              <Data>1</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa14" format="float">
+              <Data>1</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa15" format="float">
+              <Data>55</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa16" format="float">
+              <Data>150</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa17" format="float">
+              <Data>1200</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa18" format="float">
+              <Data>1300</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa19" format="float">
+              <Data>1</Data>
+              <Qualifier name="Variable Type">Dependent</Qualifier>
+            </ParameterValue>
+          </PropertyData>
+          <PropertyData property="pr4">
+            <Data format="string">-</Data>
+            <ParameterValue parameter="pa20" format="float">
+              <Data>0,1,2</Data>
+              <Qualifier name="Variable Type">Independent,Independent,Independent</Qualifier>
+            </ParameterValue>
+            <ParameterValue parameter="pa21" format="float">
+              <Data>40,-15,-7</Data>
+              <Qualifier name="Variable Type">Dependent,Dependent,Dependent</Qualifier>
+            </ParameterValue>
+          </PropertyData>
+        </BulkDetails>
+      </Material>
+      <Metadata>
+        <ParameterDetails id="pa0">
+          <Name>Alternating Stress</Name>
+          <Units name="Stress">
+            <Unit>
+              <Name>ksi</Name>
+            </Unit>
+          </Units>
+        </ParameterDetails>
+        <ParameterDetails id="pa1">
+          <Name>Cycles</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa2">
+          <Name>Temperature</Name>
+          <Units name="Temperature">
+            <Unit>
+              <Name>F</Name>
+            </Unit>
+          </Units>
+        </ParameterDetails>
+        <ParameterDetails id="pa3">
+          <Name>A-Ratio</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa4">
+          <Name>Walker Exponent</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa5">
+          <Name>Strength Coefficient</Name>
+          <Units name="Stress">
+            <Unit>
+              <Name>ksi</Name>
+            </Unit>
+          </Units>
+        </ParameterDetails>
+        <ParameterDetails id="pa6">
+          <Name>Strain Hardening Exponent</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa7">
+          <Name>Yield Offset Strain</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa8">
+          <Name>Low Temperature Extrapolation</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa9">
+          <Name>Larson-Miller Constant</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa10">
+          <Name>Stress Offset</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa11">
+          <Name>Stress Type</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa12">
+          <Name>Temperature Adder</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa13">
+          <Name>Temperature Multiplier</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa14">
+          <Name>Rupture Multiplier</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa15">
+          <Name>Stress Low</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa16">
+          <Name>Stress High</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa17">
+          <Name>Temperature Low</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa18">
+          <Name>Temperature High</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa19">
+          <Name>Rupture Damage Exponent</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa20">
+          <Name>Order</Name>
+          <Unitless />
+        </ParameterDetails>
+        <ParameterDetails id="pa21">
+          <Name>Coefficient</Name>
+          <Unitless />
+        </ParameterDetails>
+        <PropertyDetails id="pr0">
+          <Unitless />
+          <Name>S-N Curve</Name>
+        </PropertyDetails>
+        <PropertyDetails id="pr1">
+          <Unitless />
+          <Name>Walker Exponent</Name>
+        </PropertyDetails>
+        <PropertyDetails id="pr2">
+          <Unitless />
+          <Name>Ramberg-Osgood Parameters</Name>
+        </PropertyDetails>
+        <PropertyDetails id="pr3">
+          <Unitless />
+          <Name>Larson-Miller Parameters</Name>
+        </PropertyDetails>
+        <PropertyDetails id="pr4">
+          <Unitless />
+          <Name>Larson-Miller Polynomial</Name>
+        </PropertyDetails>
+      </Metadata>
+    </MatML_Doc>
+  </Materials>
+</EngineeringData>
