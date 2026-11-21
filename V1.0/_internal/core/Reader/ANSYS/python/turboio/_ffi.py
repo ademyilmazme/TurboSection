@@ -54,11 +54,11 @@ _L = _common_loader()
 module_version, file_version = _L.module_version, _L.file_version
 
 OK, E_ARGUMENT, E_HANDLE, E_OPEN, E_FORMAT, E_RANGE, E_BUFFER, E_STATE, E_NATIVE, E_MEMORY, \
-    E_INTERNAL, E_MISSING = 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11
+    E_INTERNAL, E_MISSING, E_FAULT = 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12
 STATUS_NAMES = {OK: "OK", E_ARGUMENT: "ARGUMENT", E_HANDLE: "HANDLE", E_OPEN: "OPEN",
                 E_FORMAT: "FORMAT", E_RANGE: "RANGE", E_BUFFER: "BUFFER", E_STATE: "STATE",
                 E_NATIVE: "NATIVE", E_MEMORY: "MEMORY", E_INTERNAL: "INTERNAL",
-                E_MISSING: "MISSING"}
+                E_MISSING: "MISSING", E_FAULT: "FAULT"}
 
 HEADER_WORDS = 80
 MAX_DOF = 128
@@ -96,6 +96,14 @@ class ClosedError(TurboIOError):
 
 class NativeError(TurboIOError):
     """The solver's reader library raised an error."""
+
+
+class FaultError(NativeError):
+    """A fault (an access violation ...) was contained inside a native call:
+    nothing was returned, the file object answers nothing from now on (close
+    it), and the process may be unstable — a fault that followed a wild
+    write has damaged memory.  Report the file; restart before relying on
+    anything else (native/include/turboio/turboio.h, "Faults")."""
 
 
 class MissingError(TurboIOError, LookupError):
@@ -313,7 +321,7 @@ def library() -> ctypes.CDLL:
 
 _ERRORS = {E_OPEN: OpenError, E_FORMAT: FormatError, E_RANGE: SetIndexError,
            E_HANDLE: ClosedError, E_NATIVE: NativeError, E_MEMORY: MemoryError,
-           E_MISSING: MissingError, E_ARGUMENT: ArgumentError}
+           E_MISSING: MissingError, E_ARGUMENT: ArgumentError, E_FAULT: FaultError}
 
 
 def check(lib: ctypes.CDLL, status: int) -> None:

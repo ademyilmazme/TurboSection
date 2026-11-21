@@ -17,15 +17,20 @@ and equivalent stresses ...) is TurboSection's own Python, unchanged:
 from __future__ import annotations
 
 import ctypes
+import logging
+import operator
 import os
+import threading
 from dataclasses import dataclass
 from typing import Dict, Iterable, Optional, Tuple
 
 import numpy as np
 
 from . import _ffi as N
-from ._ffi import (ArgumentError, ClosedError, FormatError, MissingError, NativeError, OpenError,
-                   SetIndexError, TurboIOError, UnavailableError)
+from ._ffi import (ArgumentError, ClosedError, FaultError, FormatError, MissingError, NativeError,
+                   OpenError, SetIndexError, TurboIOError, UnavailableError)
+
+logger = logging.getLogger(__name__)
 
 #: Per-element state of a raw element record (turboio.h TURBOIO_RECORD_*).
 RECORD_NO_SOLUTION, RECORD_ABSENT, RECORD_ZERO, RECORD_STORED = 0, 1, 2, 3
@@ -47,12 +52,58 @@ def library() -> ctypes.CDLL:
 
 
 # ------------------------------------------------------------ name tables
+#: Where the library's names come from when this process does not load the
+#: library (None: the library).  The names are the library's constants; a
+#: process that leaves the library to another one (TurboSection: its reader
+#: process, core.reader_process) gives an object with the five functions
+#: below, answered from that process — so the binding's values used here
+#: (``ResultSet.dof_labels``) never load the library.
+_NAMES = None
+
+
+def use_names(source) -> None:
+    """Take the library's names from *source* (None: the library) — the
+    module doc of :data:`_NAMES`."""
+    global _NAMES
+    _NAMES = source
+
+
+#: The ranges :func:`name_tables` covers (a name outside them is asked for).
+NAME_TABLE_DOFS = 1024
+NAME_TABLE_SLOTS = 512
+
+
+def name_tables() -> dict:
+    """The library's name tables, complete over NAME_TABLE_* (for another
+    process: :func:`use_names`)."""
+    return {"element_records": element_record_names(),
+            "avail": {b: avail_item_name(b) for b in range(64)},
+            "dof": {d: dof_label(d) for d in range(NAME_TABLE_DOFS)},
+            "mp": {s: mp_label(s) for s in range(NAME_TABLE_SLOTS)},
+            "legacy_avail_mask": legacy_avail_mask()}
+
+
+def _c_int(value) -> Optional[int]:
+    """*value* as the C int it is passed as; None when it is not an integer
+    of that range (ctypes would wrap it into another, valid, one)."""
+    try:
+        i = operator.index(value)
+    except TypeError:
+        return None
+    return i if -2 ** 31 <= i < 2 ** 31 else None
+
+
 def element_record_name(index: int) -> Optional[str]:
-    return N.name(library().turboio_element_record_name(index))
+    if _NAMES is not None:
+        return _NAMES.element_record_name(index)
+    index = _c_int(index)
+    return None if index is None else N.name(library().turboio_element_record_name(index))
 
 
 def element_record_names() -> Tuple[str, ...]:
     """The element index table's records, in its order."""
+    if _NAMES is not None:
+        return _NAMES.element_record_names()
     out = []
     while (n := element_record_name(len(out))) is not None:
         out.append(n)
@@ -60,7 +111,10 @@ def element_record_names() -> Tuple[str, ...]:
 
 
 def avail_item_name(bit: int) -> Optional[str]:
-    return N.name(library().turboio_avail_item_name(bit))
+    if _NAMES is not None:
+        return _NAMES.avail_item_name(bit)
+    bit = _c_int(bit)
+    return None if bit is None else N.name(library().turboio_avail_item_name(bit))
 
 
 def avail_names(bits: int) -> Tuple[str, ...]:
@@ -69,16 +123,24 @@ def avail_names(bits: int) -> Tuple[str, ...]:
 
 
 def dof_label(dof: int) -> Optional[str]:
-    return N.name(library().turboio_dof_label(dof))
+    if _NAMES is not None:
+        return _NAMES.dof_label(dof)
+    dof = _c_int(dof)
+    return None if dof is None else N.name(library().turboio_dof_label(dof))
 
 
 def mp_label(slot: int) -> Optional[str]:
     """The MP property label of a material-record slot (mpcom.inc)."""
-    return N.name(library().turboio_mp_label(slot))
+    if _NAMES is not None:
+        return _NAMES.mp_label(slot)
+    slot = _c_int(slot)
+    return None if slot is None else N.name(library().turboio_mp_label(slot))
 
 
 def legacy_avail_mask() -> int:
     """The AvailData bits the legacy reader names."""
+    if _NAMES is not None:
+        return _NAMES.legacy_avail_mask()
     return int(library().turboio_legacy_avail_mask())
 
 
@@ -229,22 +291,41 @@ def open(path) -> "File":  # noqa: A001 - the module's entry point
 
 
 class File:
-    """One result file opened by the native reader."""
+    """One result file opened by the native reader.
+
+    Every array it returns is a NumPy array of its own (the native tables are
+    copied into caller-owned buffers): nothing refers to native memory, so
+    results stay valid after :meth:`release_mesh` and :meth:`close`.  A file
+    object may be shared between threads: a read (the native load and its
+    copy) is one step under the object's lock.  After a :class:`FaultError`
+    the object answers nothing more."""
 
     def __init__(self, path) -> None:
         self._lib = library()
         self.path = os.fspath(path)
         self._handle: Optional[ctypes.c_void_p] = None
         self._metadata: Optional[Metadata] = None
+        self._fault: Optional[str] = None
+        self._lock = threading.RLock()                # a load and its copy: one step
+        self._noted = set()
         handle = ctypes.c_void_p()
-        N.check(self._lib, self._lib.turboio_open(self.path.encode("utf-8"), ctypes.byref(handle)))
+        try:
+            status = self._lib.turboio_open(self.path.encode("utf-8"), ctypes.byref(handle))
+        except OSError as exc:                        # a fault the library did not contain
+            raise FaultError(self._fault_text(exc)) from None
+        N.check(self._lib, status)
         self._handle = handle
 
     # -------------------------------------------------------- lifetime
     def close(self) -> None:
-        handle, self._handle = self._handle, None
-        if handle is not None:
-            N.check(self._lib, self._lib.turboio_close(handle))
+        with self._lock:
+            handle, self._handle = self._handle, None
+            if handle is not None:
+                try:
+                    status = self._lib.turboio_close(handle)
+                except OSError as exc:
+                    raise FaultError(self._fault_text(exc)) from None
+                N.check(self._lib, status)
 
     @property
     def closed(self) -> bool:
@@ -262,13 +343,31 @@ class File:
         except Exception:  # pragma: no cover - interpreter shutdown
             pass
 
+    def _fault_text(self, exc: BaseException) -> str:
+        return (f"{self.path}: {exc} inside the native reader — nothing was returned, the file "
+                "object is unusable and the process may be unstable")
+
     def _call(self, fn, *args) -> None:
-        if self._handle is None:
-            raise ClosedError(f"{self.path}: the file is closed")
-        N.check(self._lib, fn(self._handle, *args))
+        with self._lock:                              # one native call of this file at a time;
+            if self._fault is not None:               # a read holds it over its load and copy
+                raise FaultError(self._fault)
+            if self._handle is None:
+                raise ClosedError(f"{self.path}: the file is closed")
+            try:
+                status = fn(self._handle, *args)
+            except OSError as exc:
+                # a fault the library did not contain (reported by ctypes): the
+                # native handle is in an unknown state — it is not used again,
+                # not even to close it
+                self._fault = self._fault_text(exc)
+                self._handle = None
+                raise FaultError(self._fault) from None
+            N.check(self._lib, status)
 
     # -------------------------------------------------------- headers
     def metadata(self) -> Metadata:
+        if self._fault is not None:
+            raise FaultError(self._fault)
         if self._handle is None:
             raise ClosedError(f"{self.path}: the file is closed")
         if self._metadata is None:
@@ -283,28 +382,38 @@ class File:
                 dof_ids=tuple(md.dof_ids[:md.n_dof_ids]), **scalars)
         return self._metadata
 
+    def _drop(self, release) -> None:
+        """Release a staging after a failed copy (nothing when the handle is gone)."""
+        handle = self._handle
+        if handle is not None:
+            try:
+                release(handle)
+            except OSError:                           # not worth a second report
+                pass
+
     def mesh(self) -> Mesh:
-        sizes = N.MeshSizes()
-        self._call(self._lib.turboio_mesh_load, ctypes.byref(sizes))
-        n, ne, nn = sizes.n_nodes, sizes.n_elements, sizes.n_element_nodes
-        nt, words = sizes.n_element_types, sizes.ety_words
-        node_ids = np.empty(n, np.int32)
-        xyz = np.empty((n, 3), np.float64)
-        angles = np.empty((n, 3), np.float64)
-        header = np.empty((ne, 10), np.int32)
-        offsets = np.empty(ne + 1, np.int64)
-        nodes = np.empty(nn, np.int32)
-        records = np.zeros((nt, max(words, 1)), np.int32)
-        types = (N.ElementTypeInfo * max(nt, 1))()
-        buffers = N.MeshBuffers(
-            n, N.ptr(node_ids, N.i32), N.ptr(xyz, N.f64), N.ptr(angles, N.f64), ne,
-            N.ptr(header, N.i32), N.ptr(offsets, N.i64), nn, N.ptr(nodes, N.i32), nt, words,
-            N.ptr(records, N.i32), types)
-        try:
-            self._call(self._lib.turboio_mesh_copy, ctypes.byref(buffers))
-        except Exception:
-            self._lib.turboio_mesh_release(self._handle)
-            raise
+        with self._lock:
+            sizes = N.MeshSizes()
+            self._call(self._lib.turboio_mesh_load, ctypes.byref(sizes))
+            n, ne, nn = sizes.n_nodes, sizes.n_elements, sizes.n_element_nodes
+            nt, words = sizes.n_element_types, sizes.ety_words
+            try:
+                node_ids = np.empty(n, np.int32)
+                xyz = np.empty((n, 3), np.float64)
+                angles = np.empty((n, 3), np.float64)
+                header = np.empty((ne, 10), np.int32)
+                offsets = np.empty(ne + 1, np.int64)
+                nodes = np.empty(nn, np.int32)
+                records = np.zeros((nt, max(words, 1)), np.int32)
+                types = (N.ElementTypeInfo * max(nt, 1))()
+                buffers = N.MeshBuffers(
+                    n, N.ptr(node_ids, N.i32), N.ptr(xyz, N.f64), N.ptr(angles, N.f64), ne,
+                    N.ptr(header, N.i32), N.ptr(offsets, N.i64), nn, N.ptr(nodes, N.i32), nt,
+                    words, N.ptr(records, N.i32), types)
+                self._call(self._lib.turboio_mesh_copy, ctypes.byref(buffers))
+            except Exception:                         # the copy, or no memory for its arrays
+                self._drop(self._lib.turboio_mesh_release)
+                raise
         element_types = {}
         for k in range(nt):
             t = types[k]
@@ -333,7 +442,8 @@ class File:
         """The raw fields a set provides: "NSL" and element record names."""
         codes = (N.i32 * 64)()
         written = N.i32()
-        self._call(self._lib.turboio_set_fields, set_index, 64, codes, ctypes.byref(written))
+        self._call(self._lib.turboio_set_fields, _set(set_index), 64, codes,
+                   ctypes.byref(written))
         return tuple("NSL" if c == NODAL_SOLUTION_CODE else element_record_name(c)
                      for c in codes[:written.value])
 
@@ -360,6 +470,7 @@ class File:
     def raw_nodal(self, set_index: int, scope: Optional[Iterable[int]] = None) -> Table:
         """The DOF solution as stored: nodal systems, file order; NaN where
         the file marks "no value"."""
+        set_index = _set(set_index)
         t = self._table(self._lib.turboio_raw_nodal_load, set_index, *_scope(scope))
         dofs = self.result_sets()[set_index].dof_labels
         return _named(t, dofs)
@@ -368,73 +479,108 @@ class File:
                     scope: Optional[Iterable[int]] = None) -> Table:
         """An element record as stored, element-equivalence order; a *scope*
         reads only its elements' records."""
-        return self._table(self._lib.turboio_raw_element_load, set_index,
-                           record.encode("ascii"), *_scope(scope))
+        return self._table(self._lib.turboio_raw_element_load, _set(set_index),
+                           _record(record), *_scope(scope))
 
     def raw_reactions(self, set_index: int) -> Table:
         """The reaction forces (RF), file order: node, DOF position in the
         set's DOF list (1-based), value — nodal coordinate systems."""
-        return self._table(self._lib.turboio_raw_reactions_load, set_index)
+        return self._table(self._lib.turboio_raw_reactions_load, _set(set_index))
 
     # ------------------------------------------- the legacy presentation
     # What ansys-mapdl-reader hands TurboSection (native legacy_compat.hpp).
     def legacy_nodal_solution(self, set_index: int) -> Table:
         """``nodal_solution(set, in_nodal_coord_sys=True)``: sorted by node,
         "no value" 0, a partial solution every node with NaN rows."""
+        set_index = _set(set_index)
         t = self._table(self._lib.turboio_legacy_nodal_solution_load, set_index)
         return _named(t, self.result_sets()[set_index].dof_labels)
 
     def legacy_element_stress(self, set_index: int, global_axes: bool = True) -> Table:
         """``element_stress(set, in_element_coord_sys=not global_axes)``:
-        per element (sorted) its rows of SX SY SZ SXY SYZ SXZ and row nodes."""
-        return self._table(self._lib.turboio_legacy_element_stress_load, set_index,
-                           int(bool(global_axes)))
+        per element (sorted) its rows of SX SY SZ SXY SYZ SXZ and row nodes.
+        In global axes a row whose element's Euler-angle record holds no
+        angles for it (the second surface of a shell storing both) is NaN —
+        ``n_invalid`` counts them; the legacy reader rotates such a row by
+        uninitialised memory."""
+        set_index = _set(set_index)
+        t = self._table(self._lib.turboio_legacy_element_stress_load, set_index,
+                        int(bool(global_axes)))
+        if t.n_invalid and ("no angles", set_index) not in self._noted:
+            self._noted.add(("no angles", set_index))
+            logger.info("%s: set %d: %d element stress row(s) have no Euler angles in the file "
+                        "(a shell's second surface) - no value in global axes",
+                        self.path, set_index + 1, t.n_invalid)
+        return t
 
     def legacy_nodal_temperature(self, set_index: int) -> Table:
         """``nodal_temperature(set)`` of a structural file."""
-        return self._table(self._lib.turboio_legacy_nodal_temperature_load, set_index)
+        return self._table(self._lib.turboio_legacy_nodal_temperature_load, _set(set_index))
 
     def legacy_element_data(self, set_index: int, record: str,
                             scope: Optional[Iterable[int]] = None) -> Table:
         """``element_solution_data(set, record)``: per element (sorted) the
         stored record (none for any other state) and its nodes; a *scope*
         (element ids) reads only those elements' records."""
-        return self._table(self._lib.turboio_legacy_element_data_load, set_index,
-                           record.encode("ascii"), *_scope(scope))
+        return self._table(self._lib.turboio_legacy_element_data_load, _set(set_index),
+                           _record(record), *_scope(scope))
 
     def _table(self, load, *args) -> Table:
-        s = N.TableSizes()
-        self._call(load, *args, ctypes.byref(s))
-        ne, nr, nn, nc, layout = s.n_entities, s.n_rows, s.n_nodes, s.n_columns, s.layout
-        flat = layout in (LAYOUT_RECORDS, LAYOUT_ELEMENT_DATA, LAYOUT_PROPERTIES)
-        noded = layout in (LAYOUT_ELEMENT_DATA, LAYOUT_COMPONENTS)
-        ids = np.empty(ne, np.int32)
-        offsets = np.empty(ne + 1, np.int64) if layout in (
-            LAYOUT_RECORDS, LAYOUT_ELEMENT_NODAL, LAYOUT_ELEMENT_DATA, LAYOUT_PROPERTIES) else None
-        status = np.empty(ne, np.int32) if flat else None
-        rows = np.empty(nr, np.int32) if layout == LAYOUT_ELEMENT_NODAL else \
-            np.empty(nn, np.int32) if noded else None
-        node_offsets = np.empty(ne + 1, np.int64) if noded else None
-        keys = np.empty(ne, np.int32) if layout in (LAYOUT_NODE_DOF, LAYOUT_PROPERTIES) else None
-        names = ctypes.create_string_buffer(ne * N.NAME_SIZE + 1) \
-            if layout == LAYOUT_COMPONENTS else None
-        values = np.empty(nr if flat or layout == LAYOUT_COMPONENTS else (nr, nc), np.float64)
-        buffers = N.TableBuffers(ne, nr, nn, nc, layout, N.ptr(ids, N.i32),
-                                 N.ptr(offsets, N.i64), N.ptr(status, N.i32), N.ptr(rows, N.i32),
-                                 N.ptr(node_offsets, N.i64), N.ptr(keys, N.i32),
-                                 ctypes.cast(names, ctypes.POINTER(ctypes.c_char))
-                                 if names is not None else None,
-                                 N.ptr(values, N.f64))
-        try:
-            self._call(self._lib.turboio_table_copy, ctypes.byref(buffers))
-        except Exception:
-            self._lib.turboio_table_release(self._handle)
-            raise
+        with self._lock:                              # no other load between this one and its copy
+            s = N.TableSizes()
+            self._call(load, *args, ctypes.byref(s))
+            ne, nr, nn, nc, layout = s.n_entities, s.n_rows, s.n_nodes, s.n_columns, s.layout
+            flat = layout in (LAYOUT_RECORDS, LAYOUT_ELEMENT_DATA, LAYOUT_PROPERTIES)
+            noded = layout in (LAYOUT_ELEMENT_DATA, LAYOUT_COMPONENTS)
+            try:
+                ids = np.empty(ne, np.int32)
+                offsets = np.empty(ne + 1, np.int64) if layout in (
+                    LAYOUT_RECORDS, LAYOUT_ELEMENT_NODAL, LAYOUT_ELEMENT_DATA,
+                    LAYOUT_PROPERTIES) else None
+                status = np.empty(ne, np.int32) if flat else None
+                rows = np.empty(nr, np.int32) if layout == LAYOUT_ELEMENT_NODAL else \
+                    np.empty(nn, np.int32) if noded else None
+                node_offsets = np.empty(ne + 1, np.int64) if noded else None
+                keys = np.empty(ne, np.int32) \
+                    if layout in (LAYOUT_NODE_DOF, LAYOUT_PROPERTIES) else None
+                names = ctypes.create_string_buffer(ne * N.NAME_SIZE + 1) \
+                    if layout == LAYOUT_COMPONENTS else None
+                values = np.empty(nr if flat or layout == LAYOUT_COMPONENTS else (nr, nc),
+                                  np.float64)
+                buffers = N.TableBuffers(ne, nr, nn, nc, layout, N.ptr(ids, N.i32),
+                                         N.ptr(offsets, N.i64), N.ptr(status, N.i32),
+                                         N.ptr(rows, N.i32), N.ptr(node_offsets, N.i64),
+                                         N.ptr(keys, N.i32),
+                                         ctypes.cast(names, ctypes.POINTER(ctypes.c_char))
+                                         if names is not None else None,
+                                         N.ptr(values, N.f64))
+                self._call(self._lib.turboio_table_copy, ctypes.byref(buffers))
+            except Exception:                         # the copy, or no memory for its arrays
+                self._drop(self._lib.turboio_table_release)
+                raise
         text = () if names is None else tuple(
             names.raw[k * N.NAME_SIZE:(k + 1) * N.NAME_SIZE].split(b"\0")[0].decode("latin-1")
             for k in range(ne))
         return Table(layout, ids, values, offsets, status, rows, partial=bool(s.partial),
                      n_invalid=int(s.n_invalid), node_offsets=node_offsets, keys=keys, names=text)
+
+
+def _set(set_index) -> int:
+    """A result set index as the C int it is passed as.  SetIndexError for
+    anything else: ctypes would wrap a larger integer into another set's
+    index and that set's data would come back."""
+    i = _c_int(set_index)
+    if i is None or isinstance(set_index, bool):
+        raise SetIndexError(f"result set index {set_index!r} is not an integer in range")
+    return i
+
+
+def _record(record) -> bytes:
+    """An element record name for the library (which knows the names)."""
+    try:
+        return str(record).encode("ascii")
+    except UnicodeEncodeError:
+        raise ArgumentError(f"unknown element record {record!r}") from None
 
 
 def _scope(scope):
@@ -467,7 +613,7 @@ def _result_set(s: "N.SetInfo") -> ResultSet:
 
 
 __all__ = [
-    "ArgumentError", "ClosedError", "ElementType", "File", "FormatError",
+    "ArgumentError", "ClosedError", "ElementType", "FaultError", "File", "FormatError",
     "ELEMENT_COMPONENT", "LAYOUT_COMPONENTS", "LAYOUT_ELEMENT_DATA", "LAYOUT_ELEMENT_NODAL",
     "LAYOUT_NODAL", "LAYOUT_NODE_DOF", "LAYOUT_PROPERTIES", "LAYOUT_RECORDS", "Mesh",
     "Metadata", "NODE_COMPONENT", "NO_PROPERTY", "SCALAR", "TABLE", "mp_label",

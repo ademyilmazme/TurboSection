@@ -3,7 +3,7 @@ TurboSection V1.0
 
 Version            1.0.0
 Display name       TurboSection V1.0
-Build date         2026-11-18
+Build date         2026-11-21
 Platform           Windows x64 (Windows 10 / 11, 64-bit)
 Packaging          PyInstaller 6.22.3, one-folder build
 Python             3.11.0 (CPython, embedded)
@@ -18,13 +18,13 @@ Nastran reader runtime (separate, isolated: pyNastran needs NumPy < 2)
 Native engines (built from source for this release, MSVC Release, x64)
   turbolcf.dll    ABI 2   model revision 37      MSVC 19.44.35219.0  SHA-256 fcce4c76edac767b64fd8ec089e95cbc3546a64d16bf9329c20de84306b2e71c
   turbocrack.dll  ABI 6   model revision 6       MSVC 19.44.35219.0  SHA-256 ac5b2c3aa5075f4444253a56f998cf93d151fbf6defee0bc2356a871dcf4c422
-  turboio.dll     ABI 8   ANSYS v242             19.44.35219.0  SHA-256 76aaa0bfc6f81142dbf747e15e1eae470327786b10ff92fda85e4e5543badb9f
+  turboio.dll     ABI 8   ANSYS v242             19.44.35219.0  SHA-256 29653c4e00049da56eadca4d8e9e5bf9484b1099fee7441fd79e3b712d75729f
   turboodb.dll    ABI 3   Abaqus 2024            19.44.35219.0  SHA-256 919019282ddf852f710ee082c4156530d5c743f73ea68361f197062f031fd7d7
   turbofrd.dll    ABI 1                          MSVC 19.44.35219.0  SHA-256 4ce17b0f63154ef6feebfcf52a6f408ef947a0522f297b881714c8cfd13422fb
 
 Calculation engines as reported by the packaged DLLs at run time
-  turbolcf.dll    model revision 37, ABI 2, library 0.1.0
-  turbocrack.dll  model revision 6, ABI 6
+  turbolcf.dll    model revision ?, ABI ?, library ?
+  turbocrack.dll  model revision ?, ABI ?
 
 Vendor runtimes (proprietary, see RELEASE_NOTES.md)
   not included: the ANSYS 2024 R2 and Abaqus 2024 runtimes come from the user's own installation

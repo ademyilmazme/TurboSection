@@ -1,6 +1,11 @@
 # TurboSection V1.0 — Release Notes
 
-**Version 1.0.0 · first official release · Windows x64 · 2026-11-18**
+**Version 1.0.0 · Windows x64 · first released 2026-11-18, rebuilt 2026-11-20**
+
+The 2026-11-20 build replaces the first V1.0 package. It carries the
+performance, rendering and stability work of 2026-11-18 – 2026-11-20 (see
+"Changes in the 2026-11-20 build"); the version number, the engines and every
+numerical result are unchanged.
 
 TurboSection V1.0 is a finite-element result post-processor for turbomachinery
 components. It is distributed as a self-contained one-folder Windows
@@ -83,6 +88,31 @@ validation is incomplete and they are **not** declared production-ready:
   and PSOLID CORDM ≠ 0 are refused.
 * **Abaqus**: shells, contact and reaction fields are listed but not opened.
 
+## Changes in the 2026-11-20 build
+
+* **Large models** — File ▸ Open, the Project tree, result switching, probing,
+  hover and selection on models of a million nodes: the contour corruption
+  ("fragmented colours") and the "load failed" errors on valid files are
+  fixed; selections, Named Selection highlights and Generate Features are
+  several times faster (models of thousands of Bodies included).
+* **Open and Evaluate run in the background** with a progress display and
+  Cancel (Esc); the window stays responsive. A cancelled Open opens nothing,
+  a cancelled Evaluate leaves every result as it was.
+* **The native ANSYS reader runs in a process of its own**: a file the ANSYS
+  library cannot read ends only that process — TurboSection reports the
+  failed read and continues.
+* **Deformed results**: nodes, elements, faces, edges, vertices, box and lasso
+  selections, highlights and measurement markers are picked and drawn on the
+  deformed shape as displayed; ids, coordinates and values stay the model's.
+* **Curved quadratic faces**: highlights lie exactly on the contour (one
+  tessellation of the skin).
+* **RST unit system**: the result file's `/UNITS` word is taken from every
+  file by both readers. In the first build the ansys-mapdl-reader fallback
+  (used without an ANSYS installation) took every file as undeclared (MPA
+  assumed); the first build's notes described this the wrong way round.
+* Lower memory: the ANSYS reader libraries no longer load into the
+  application; caches are bounded.
+
 ## Requirements and solver runtimes
 
 * Windows 10 / 11, 64-bit; OpenGL 3.2 graphics.
@@ -104,13 +134,12 @@ validation is incomplete and they are **not** declared production-ready:
   the `TurboSection_V1.0` folder, which leaves at most 72 characters for the
   folder you extract into under Windows' 260-character limit. Unless long
   paths are enabled, extracting deeper fails with a "path too long" error.
-* **Native ANSYS reader and the RST unit system (pre-existing).** The native
-  reader does not pass the result file's `/UNITS` word to the application,
-  so *Source Unit System: Program Controlled* assumes the MPA system (mm, t,
-  s, MPa) for files read natively, while the ansys-mapdl-reader backend uses
-  the declared system. For models in MPA units nothing changes; for a model
-  declaring another system (for example SI), set *Source Unit System*
-  explicitly in the model's Details. 81 reader parity tests record this.
+* **The reader process's memory.** While it runs, the native reader's own
+  process (a second `TurboSection.exe`) reserves about 375 MB for the ANSYS
+  libraries (its working set is about 30–50 MB); it ends two minutes after
+  the last read or with the application.
+* **Thick 2D with a deformed result**: picks stay on the undeformed
+  extrusion (the deformed extrusion is drawn; values are the model's).
 * **Not-a-number sign** of "no value" entries differs between the native and
   the ansys-mapdl-reader backend (+NaN / −NaN); values and displays are equal.
 * **Stale engine test** — `test_fesafe_tensor_gate.py` still pins the 48.41×
@@ -126,29 +155,40 @@ validation is incomplete and they are **not** declared production-ready:
 
 ## How this release was validated
 
-* Native engines rebuilt clean from the current source; each engine's ctest
-  passed; the packaged DLLs are byte-identical (SHA-256) to those builds.
-* Engine and reader test suites (source build): Crack 1782 passed;
-  Abaqus 189; CalculiX 199; Nastran 63; LCF 1148 passed, 1 stale test;
-  ANSYS 2351 passed, 81 pre-existing unit-word parity failures.
-* Application test suite, source environment: 3 407 passed, 101 skipped,
-  0 failed. The same suite inside the packaged release: 3 393 passed,
-  101 skipped (the same skips). The remaining 14 tests cannot run inside a
-  frozen application: 9 need a test-only Qt module, and 5 start a Python
+The 2026-11-20 build was validated as the first one was, from scratch
+(`TurboSection_V1.0_Validation_Report.md` next to the ZIP):
+
+* Native engines: turbolcf, turbocrack, turboodb and turbofrd are the DLLs
+  of the first build (byte-identical, unchanged sources); turboio was
+  rebuilt on 2026-11-19 from its current source (ctest 3/3 passed). The
+  packaged DLLs are byte-identical (SHA-256) to these builds.
+* Reader test suite (ANSYS, source build): 2 588 passed, 0 failed (the first build's 81 unit-word parity failures are fixed).
+* Application test suite, source environment: 3 565 passed, 101 skipped, 0 failed. The same
+  suite inside the packaged release: 3 552 passed,
+  101 skipped (the same skips). The remaining 15 tests cannot run inside a
+  frozen application: 9 need a test-only Qt module, and 6 start a Python
   interpreter. They are not defects of the release.
-* Nastran: the reader's 63 tests and the application's 57 Nastran tests
-  passed against the packaged standalone runtime.
+* Nastran: the reader's 63 tests and the application's 57 Nastran tests passed
+  against the packaged standalone runtime.
 * A release snapshot — ANSYS 2D / 3D / thermal, CalculiX, Abaqus, Nastran,
   NASALIFE, Strain-Life, Stress-Life, Crack Growth — evaluated through the
   application inside the packaged release and in the source environment:
   4 358 result arrays, every one bit-identical; the packaged engines report
   model revisions 37 (turbolcf) and 6 (turbocrack).
-* TurboSection.exe launched directly from the release folder: startup, a
-  saved project, contour evaluation, graph and table; every loaded module
-  comes from the release folder or Windows (and, by design, the vendor
-  installations).
+* The native ANSYS reader runs in its own process in the packaged
+  application: a second `TurboSection.exe --reader-host` holds turboio.dll and the ANSYS
+  libraries (about 380 MB reserved, 38 MB working set); the application
+  process loads none of them; no reader process is left after the
+  application exits — also when it is killed.
+* TurboSection.exe launched directly from the release folder: startup, a saved project, contour evaluation, graph and table, a result
+  file through the Open Results dialog; every loaded module comes from the
+  release folder or Windows (and, by design, the vendor installations).
 * A clean-environment run from the extracted ZIP (other folder, path with
-  spaces, no development environment variables, PATH = Windows only).
+  spaces, no development environment variables, PATH = Windows only):
+  probe, 4 358 / 4 358 result arrays bit-identical, TurboSection.exe with a
+  saved project, an evaluation and a result file read by the reader
+  process, the no-installation emulation and the frozen Nastran /
+  reader-process tests; every one of the 7 683 files unchanged after use.
   **Limitation:** no separate clean Windows machine or VM was available; the
   checks ran on the build computer, which has ANSYS 2024 R2 and Abaqus 2024
   installed. A computer without them was emulated by pointing both runtime

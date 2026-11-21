@@ -54,7 +54,11 @@ the vendor's installation:
   Without an ANSYS installation, .rst / .rth files are read by the built-in
   ansys-mapdl-reader backend (the same stress, strain, displacement and
   temperature values, slower); the log file says which reader was used.
-  See RELEASE_NOTES.md (Known issues) for the result file's unit-system word.
+  The native reader runs in a process of its own: while a result file is
+  read, Task Manager shows a second TurboSection.exe (started with
+  --reader-host).  It ends two minutes after the last read, or with the
+  application.  A file the ANSYS library cannot read ends only that
+  process: TurboSection reports the failed read and carries on.
 * Abaqus 2024, default folder C:\SIMULIA\EstProducts\2024.  For another
   folder set
       TURBOODB_ABAQUS_ROOT=D:\SIMULIA\EstProducts\2024
